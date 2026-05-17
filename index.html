@@ -75,6 +75,29 @@
         .loading.show {
             display: block;
         }
+        
+        .custom-request {
+            margin-top: 30px;
+            padding-top: 20px;
+            border-top: 1px solid #ddd;
+        }
+        
+        .custom-request input {
+            width: 60%;
+            padding: 10px;
+            font-size: 16px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            margin-right: 10px;
+        }
+        
+        .custom-request button {
+            background-color: #2196F3;
+        }
+        
+        .custom-request button:hover {
+            background-color: #1976D2;
+        }
     </style>
 </head>
 <body>
@@ -88,6 +111,21 @@
     <div class="result" id="result">
         <h3>Результат запроса:</h3>
         <pre id="resultContent"></pre>
+    </div>
+
+    <div class="custom-request">
+        <h2>Произвольный GET запрос</h2>
+        <input type="text" id="urlInput" placeholder="Введите URL..." />
+        <button id="customRequestBtn">Отправить</button>
+
+        <div class="loading" id="customLoading">
+            Загрузка...
+        </div>
+
+        <div class="result" id="customResult">
+            <h3>Результат запроса:</h3>
+            <pre id="customResultContent"></pre>
+        </div>
     </div>
 
     <script>
@@ -135,6 +173,52 @@
                 loadingDiv.classList.remove('show');
                 sendButton.disabled = false;
             }
+        });
+        const customBtn = document.getElementById('customRequestBtn');
+        const urlInput = document.getElementById('urlInput');
+        const customLoading = document.getElementById('customLoading');
+        const customResult = document.getElementById('customResult');
+        const customResultContent = document.getElementById('customResultContent');
+
+        customBtn.addEventListener('click', async () => {
+            const url = urlInput.value.trim();
+            if (!url) return;
+
+            customLoading.classList.add('show');
+            customResult.classList.remove('show');
+            customBtn.disabled = true;
+
+            try {
+                const response = await fetch(url, {
+                    method: 'GET',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    }
+                });
+
+                const resultText = await response.text();
+
+                customResultContent.textContent = resultText;
+                customResult.classList.add('show');
+
+                if (!response.ok) {
+                    customResult.classList.add('error');
+                    customResultContent.textContent = `Ошибка ${response.status}: ${response.statusText}\n\n${resultText}`;
+                } else {
+                    customResult.classList.remove('error');
+                }
+
+            } catch (error) {
+                customResultContent.textContent = `Ошибка при отправке запроса: ${error.message}`;
+                customResult.classList.add('show', 'error');
+            } finally {
+                customLoading.classList.remove('show');
+                customBtn.disabled = false;
+            }
+        });
+
+        urlInput.addEventListener('keydown', (e) => {
+            if (e.key === 'Enter') customBtn.click();
         });
     </script>
 </body>
